@@ -69,8 +69,14 @@ class MireyeMCPClient:
 
     async def call_tool(self, name, arguments):
         result = await self._send("tools/call", {"name": name, "arguments": arguments})
+        if result.get("isError"):
+            print(f"MCP TOOL ERROR for {name}: {json.dumps(result)}", flush=True)
+            return "{}"
         parts = result.get("content", [])
         text = "\n".join(p.get("text", "") for p in parts if p.get("type") == "text")
+        if not text:
+            print(f"EMPTY RESPONSE for {name}: {json.dumps(result)}", flush=True)
+            return "{}"
         return text
 
     async def close(self):

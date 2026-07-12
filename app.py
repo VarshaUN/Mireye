@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from mireye_client import MireyeMCPClient
 from candidates import CANDIDATES
 from scoring import score_site
-from main import normalize_scores
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import json
@@ -27,12 +26,25 @@ async def shutdown():
     await mireye.close()
 
 
+def normalize_scores(results):
+    scores = [r["score"] for r in results]
+    lo, hi = min(scores), max(scores)
+    span = (hi - lo) or 1
+    for r in results:
+        r["display_score"] = round(((r["score"] - lo) / span) * 100)
+    return results
+
+
 async def evaluate(candidate):
     raw = await mireye.call_tool(
         "mireye_fetch",
         {"lat": candidate["lat"], "lng": candidate["lng"], "preset": "site_selection"},
     )
-    fields = json.loads(raw).get("fields", {})
+    try:
+        fields = json.loads(raw).get("fields", {})
+    except json.JSONDecodeError:
+        print(f"Could not parse response for {candidate['name']}: {raw[:300]}", flush=True)
+        fields = {}
     result = score_site(fields)
     return {**candidate, **result}
 
@@ -50,7 +62,8 @@ async def rank():
     )
     for i, s in enumerate(top, 1):
         prompt += f"Position {i} ({'first' if i==1 else 'second' if i==2 else 'third'}): {s['name']}\n"
-        prompt += f"  Facts: {'; '.join(s['reasons'])}\n\n"
+        prompt += f"  Facts: {'; '.join(s['reasons']) if s['reasons'] else 'no major flags'}\n\n"
+
     rationale = (await llm.ainvoke(prompt)).content
 
     return {"ranked": ranked, "rationale": rationale}
