@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from Mireye.mireye_client import MireyeMCPClient
-from Mireye.candidates import CANDIDATES
-from Mireye.scoring import score_site
-from Mireye.main import normalize_scores
+from mireye_client import MireyeMCPClient
+from candidates import CANDIDATES
+from scoring import score_site
+from main import normalize_scores
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import json

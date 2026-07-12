@@ -3,9 +3,9 @@ import json
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 
-from Mireye.mireye_client import MireyeMCPClient
-from Mireye.candidates import CANDIDATES
-from Mireye.scoring import score_site
+from mireye_client import MireyeMCPClient
+from candidates import CANDIDATES
+from scoring import score_site
 
 load_dotenv()
 
