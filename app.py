@@ -18,8 +18,13 @@ llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0)
 
 @app.on_event("startup")
 async def startup():
+    import os
+    token = os.environ.get("MIREYE_BEARER_TOKEN", "")
+    if token:
+        print(f"MIREYE_BEARER_TOKEN found, length={len(token)}, starts with: {token[:6]}...", flush=True)
+    else:
+        print("MIREYE_BEARER_TOKEN is NOT SET in this environment!", flush=True)
     await mireye.start()
-
 
 @app.on_event("shutdown")
 async def shutdown():
